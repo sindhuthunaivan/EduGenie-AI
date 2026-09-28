@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>EduGenie AI</title>
+<style>
+body{font-family: Arial; background:#f2f2f2; margin:0; padding:20px}
+h3{text-align:center}
+.container{max-width:700px; margin:auto; background:white; padding:20px; border-radius:10px; box-shadow:0 0 10px #ccc; margin-bottom:30px}
+input, textarea{width:95%; padding:10px; margin:10px 0; border:1px solid #ccc; border-radius:5px}
+button{background:#2e5bff; color:white; border:none; padding:8px 20px; border-radius:5px; cursor:pointer}
+.result{background:#f9f9f9; padding:15px; border-radius:8px; margin-top:10px; white-space:pre-wrap}
+.correct{color:green; font-weight:bold} .wrong{color:red; font-weight:bold}
+</style>
+</head>
+<body>
+
+
+
+<div class="container" style="text-align:center">
+<h3>Welcome to EduGenie AI</h3>
+<p>An AI-Powered Solution</p>
+
+<h4>a. Asking questions</h4>
+<input id="q1" placeholder="Ask a question">
+<button onclick="askQ()">Ask</button>
+<div id="r1" class="result" style="display:none"></div>
+
+<h4>b. Get an explanation</h4>
+<input id="q2" placeholder="Enter a topic">
+<button onclick="explainQ()">Explain</button>
+<div id="r2" class="result" style="display:none"></div>
+
+<h4>c. Summarising long paragraphs</h4>
+<textarea id="q3" placeholder="The Industrial Revolution, which began in the late 18th century..."></textarea>
+<button onclick="sumQ()">Summarize</button>
+<div id="r3" class="result" style="display:none"></div>
+
+<h4>d. Generating quizzes</h4>
+<input id="q4" placeholder="Enter topic e.g. Photosynthesis">
+<button onclick="quizQ()">Generate</button>
+<div id="r4" class="result" style="display:none"></div>
+
+<h4>e. Get a personalized learning plan</h4>
+<input id="q5" placeholder="I want to learn Python in 7 days">
+<button onclick="planQ()">Get Plan</button>
+<div id="r5" class="result" style="display:none"></div>
+</div>
+
+<script>
+async function askQ(){
+ let fd=new FormData(); fd.append("question", document.getElementById("q1").value);
+ let res=await fetch("/ask",{method:"POST", body:fd}); let d=await res.json();
+ document.getElementById("r1").style.display="block"; document.getElementById("r1").innerText=d.answer;
+}
+async function explainQ(){
+ let fd=new FormData(); fd.append("topic", document.getElementById("q2").value);
+ let res=await fetch("/explain",{method:"POST", body:fd}); let d=await res.json();
+ document.getElementById("r2").style.display="block"; document.getElementById("r2").innerText=d.answer;
+}
+async function sumQ(){
+ let fd=new FormData(); fd.append("paragraph", document.getElementById("q3").value);
+ let res=await fetch("/summarize",{method:"POST", body:fd}); let d=await res.json();
+ document.getElementById("r3").style.display="block"; document.getElementById("r3").innerHTML="<b>Summary:</b><br>"+d.summary;
+}
+async function quizQ(){
+ let fd=new FormData(); fd.append("topic", document.getElementById("q4").value);
+ let res=await fetch("/quiz",{method:"POST", body:fd}); let d=await res.json();
+ let html=""; d.quiz.forEach((q,i)=>{
+   html+=`<p><b>${i+1}. ${q.question}</b></p>`;
+   q.options.forEach(o=>{ html+=`<label><input type=radio name=q${i} value="${o}" onclick="check(this,'${q.answer}',${i})"> ${o}</label><br>` });
+   html+=`<p id=a${i}></p>`;
+ }); 
+ document.getElementById("r4").style.display="block"; document.getElementById("r4").innerHTML=html;
+}
+function check(el, correct, i){
+ if(el.value===correct) document.getElementById("a"+i).innerHTML="<span class=correct>Correct! ✓</span>";
+ else document.getElementById("a"+i).innerHTML="<span class=wrong>Wrong! Correct is: "+correct+"</span>";
+}
+async function planQ(){
+ let fd=new FormData(); fd.append("goal", document.getElementById("q5").value);
+ let res=await fetch("/learning-plan",{method:"POST", body:fd}); let d=await res.json();
+ document.getElementById("r5").style.display="block"; document.getElementById("r5").innerText=d.plan;
+}
+</script>
+</body>
+</html>
